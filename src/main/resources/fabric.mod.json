@@ -1,0 +1,11 @@
+{
+  "schemaVersion": 1,
+  "id": "cleancontrols",
+  "version": "${version}",
+  "name": "Clean Controls",
+  "description": "Neues, uebersichtliches Steuerungs-Menue mit Kategorien und Suche.",
+  "environment": "client",
+  "entrypoints": { "client": ["de.cleancontrols.CleanControlsMod"] },
+  "mixins": ["cleancontrols.mixins.json"],
+  "depends": { "fabricloader": ">=0.16.0", "minecraft": "~1.21.11", "java": ">=21" }
+}
