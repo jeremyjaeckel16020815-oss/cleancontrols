@@ -46,7 +46,7 @@ public class CleanControlsScreen extends Screen {
     }
 
     private static int classify(KeyBinding k) {
-        String id = k.getTranslationKey();
+        String id = k.getId();
         if (IMPORTANT.contains(id)) return 0;
         if (LESS.contains(id) || id.startsWith("key.hotbar.")) return 1;
         return 2; // alles andere (Mods etc.)
@@ -56,10 +56,10 @@ public class CleanControlsScreen extends Screen {
     protected void init() {
         all.clear();
         for (KeyBinding k : options.allKeys) {
-            String name = Text.translatable(k.getTranslationKey()).getString();
+            String name = Text.translatable(k.getId()).getString();
             String cat = "";
             try { cat = k.getCategory().getLabel().getString(); } catch (Throwable ignored) {}
-            String hay = (name + " " + k.getTranslationKey() + " " + cat).toLowerCase(Locale.ROOT);
+            String hay = (name + " " + k.getId() + " " + cat).toLowerCase(Locale.ROOT);
             all.add(new Entry(k, name, hay, classify(k)));
         }
         all.sort((a, b) -> a.name().compareToIgnoreCase(b.name()));
@@ -154,103 +154,5 @@ public class CleanControlsScreen extends Screen {
 
         int left = width / 2 - 170, right = width / 2 + 170, top = listTop(), bottom = listBottom();
         int maxScroll = Math.max(0, contentHeight() - (bottom - top));
-        scroll = Math.max(0, Math.min(scroll, maxScroll));
-
-        ctx.fill(left - 4, top, right + 4, bottom, 0x90000000);
-        ctx.enableScissor(left - 4, top, right + 4, bottom);
-        int y = top + 4 - (int) scroll;
-        for (Row r : rows) {
-            int h = rowHeight(r);
-            if (y + h >= top && y <= bottom) {
-                if (r.header() != null) {
-                    ctx.drawTextWithShadow(textRenderer, Text.literal("-- " + r.header() + " --"), left + 4, y + 5, 0xFFFFD27F);
-                } else {
-                    drawRow(ctx, r.entry(), left, right, y, mx, my);
-                }
-            }
-            y += h;
-        }
-        if (rows.isEmpty()) {
-            ctx.drawCenteredTextWithShadow(textRenderer, Text.literal("Nichts gefunden"), width / 2, top + 20, 0xFFAAAAAA);
-        }
-        ctx.disableScissor();
-    }
-
-    private void drawRow(DrawContext ctx, Entry e, int left, int right, int y, int mx, int my) {
-        KeyBinding k = e.key();
-        boolean conflict = hasConflict(k);
-        int nameColor = conflict ? 0xFFFF5555 : 0xFFFFFFFF;
-        String name = textRenderer.trimToWidth(e.name(), 160);
-        ctx.drawTextWithShadow(textRenderer, Text.literal(name), left + 6, y + 8, nameColor);
-
-        int kx1 = right - 160, kx2 = right - 50, rx1 = right - 46, rx2 = right - 4;
-        boolean inList = my >= listTop() && my < listBottom();
-        boolean hoverKey = inList && mx >= kx1 && mx < kx2 && my >= y + 2 && my < y + 22;
-        boolean hoverReset = inList && mx >= rx1 && mx < rx2 && my >= y + 2 && my < y + 22;
-        boolean isListening = listening == k;
-
-        ctx.fill(kx1, y + 2, kx2, y + 22, isListening ? 0xFF806000 : (hoverKey ? 0xFF505050 : 0xFF2A2A2A));
-        String label = isListening ? "> Taste druecken <" : textRenderer.trimToWidth(k.getBoundKeyLocalizedText().getString(), 104);
-        int lc = isListening ? 0xFFFFFF55 : (conflict ? 0xFFFF5555 : 0xFFFFFFFF);
-        ctx.drawCenteredTextWithShadow(textRenderer, Text.literal(label), (kx1 + kx2) / 2, y + 8, lc);
-
-        boolean changed = !k.isDefault();
-        ctx.fill(rx1, y + 2, rx2, y + 22, hoverReset && changed ? 0xFF505050 : 0xFF2A2A2A);
-        ctx.drawCenteredTextWithShadow(textRenderer, Text.literal("Reset"), (rx1 + rx2) / 2, y + 8, changed ? 0xFFFFFFFF : 0xFF666666);
-    }
-
-    @Override
-    public boolean mouseClicked(Click click, boolean doubled) {
-        if (listening != null) {
-            listening.setBoundKey(InputUtil.Type.MOUSE.createFromCode(click.button()));
-            save();
-            return true;
-        }
-        double mx = click.x(), my = click.y();
-        int left = width / 2 - 170, right = width / 2 + 170;
-        if (click.button() == 0 && my >= listTop() && my < listBottom()) {
-            int y = listTop() + 4 - (int) scroll;
-            for (Row r : rows) {
-                int h = rowHeight(r);
-                if (r.entry() != null && my >= y + 2 && my < y + 22) {
-                    if (mx >= right - 160 && mx < right - 50) {
-                        listening = r.entry().key();
-                        return true;
-                    }
-                    if (mx >= right - 46 && mx < right - 4) {
-                        r.entry().key().setBoundKey(r.entry().key().getDefaultKey());
-                        save();
-                        return true;
-                    }
-                }
-                y += h;
-            }
-        }
-        return super.mouseClicked(click, doubled);
-    }
-
-    @Override
-    public boolean keyPressed(KeyInput input) {
-        if (listening != null) {
-            if (input.key() == GLFW.GLFW_KEY_ESCAPE) {
-                listening.setBoundKey(InputUtil.UNKNOWN_KEY);
-            } else {
-                listening.setBoundKey(InputUtil.fromKeyCode(input));
-            }
-            save();
-            return true;
-        }
-        return super.keyPressed(input);
-    }
-
-    @Override
-    public boolean mouseScrolled(double mx, double my, double horizontal, double vertical) {
-        scroll -= vertical * 24;
-        return true;
-    }
-
-    @Override
-    public void close() {
-        client.setScreen(parent);
-    }
-}
+        scroll = Math.max(0,
+                          
